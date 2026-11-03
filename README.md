@@ -29,9 +29,13 @@ Okta でログインし、MCP（Model Context Protocol）サーバーのツー�
 
 ### 2. Vercel へのデプロイ
 
-1. このリポジトリを Vercel にインポートする
-2. **Storage** で Upstash for Redis を作り、プロジェクトにつなぐ（`KV_REST_API_URL` と `KV_REST_API_TOKEN` が自動で設定される）
-3. 環境変数を設定して再デプロイする。変数の一覧と説明は `.env.example` にある
+1. このリポジトリを Vercel にインポートする（最初のデプロイは、環境変数が無いため失敗してよい）
+2. Redis を作り、プロジェクトにつなぐ。Vercel では Redis が必須（無いとエラーになる）
+   1. プロジェクトの **Storage** タブで **Create Database** を押し、**Upstash for Redis** を選ぶ
+   2. プラン（無料プランで可）とリージョン（Vercel の関数と同じか近い場所）を選んで作る
+   3. **Connect Project** でこのプロジェクトを選び、すべての環境（Production / Preview / Development）につなぐ
+   4. プロジェクトの **Settings → Environment Variables** に `KV_REST_API_URL` と `KV_REST_API_TOKEN` が追加されたことを確かめる
+3. 下の表の環境変数を **Settings → Environment Variables** に設定し、**Deployments** から再デプロイする。変数の一覧と説明は `.env.example` にある
 
 | 変数 | 内容 |
 |---|---|
@@ -77,7 +81,7 @@ cp .env.example .env.local   # 値を入れる
 npm run dev                  # http://localhost:3000
 ```
 
-Redis の接続情報が無いときは、メモリに保存します（再起動で消えます）。
+Vercel の Redis を使う場合は、`vercel link` のあと `vercel env pull .env.local` で接続情報を取り込めます。Redis の接続情報が無いときは、ローカルに限りメモリに保存します（再起動で消えます）。
 
 ### テスト
 
