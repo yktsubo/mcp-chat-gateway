@@ -104,10 +104,19 @@ describe('GET /api/mcp/connect', () => {
   });
 
   it('goes back to the chat when nothing needs authorizing', async () => {
-    connectAll.mockResolvedValue({ statuses: [], close });
-    const res = await connect.GET(request('/api/mcp/connect'));
-    expect(connectAll).toHaveBeenCalledWith('https://app.example.com', USER, '');
+    connectAll.mockResolvedValue({ statuses: [{ name: 'gateway', tools: 1 }], close });
+    const res = await connect.GET(request('/api/mcp/connect?server=gateway'));
+    expect(connectAll).toHaveBeenCalledWith('https://app.example.com', USER, 'gateway');
     expect(res.headers.get('location')).toBe('https://app.example.com/');
+  });
+
+  it('rejects a missing or unknown server without starting any authorization', async () => {
+    for (const path of ['/api/mcp/connect', '/api/mcp/connect?server=', '/api/mcp/connect?server=other']) {
+      const res = await connect.GET(request(path));
+      expect(res.status).toBe(400);
+      expect(await res.text()).toBe('不正なリクエストです');
+    }
+    expect(connectAll).not.toHaveBeenCalled();
   });
 });
 
